@@ -1,1 +1,2 @@
-# cocktail_generator
+# Moe SyzslAIk
+## Cocktail recipe generator using GPT2
