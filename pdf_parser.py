@@ -1,4 +1,5 @@
 import re
+import pandas as pd
 import pickle as pkl
 from copy import copy
 from datetime import datetime as dt
@@ -10,10 +11,9 @@ from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfparser import PDFParser
 
-
-
-
 TITLE_REGEX = re.compile(r'\d\. [A-Z\s]{1,}\n\n')
+GARNISH_REGEX = re.compile(r'(?<=Garnish)[\s\n:\w]{1,}(?=\n)')
+INGREDIENT_FIELD_REGEX = re.compile(r'\n{1,}Ingredients')
 
 def read_pdf(file, log=False):
     parsed_pages = []
@@ -33,28 +33,80 @@ def read_pdf(file, log=False):
     print('{} | Finished parsing.'.format(dt.now()))
     return parsed_pages
 
-def get_recipes(page):
-    recipes = []
-    titles = list(TITLE_REGEX.finditer(page))
-    if len(titles) > 2:
-        for i in range(len(titles) - 1):
-            first_recipe, second_recipe = titles[i:i+2]
-            start = first_recipe.span()[0]
-            end = second_recipe.span()[0]
-            recipes.append(page[start:end])
-        recipes.append(page[end:])
-    elif len(titles) == 2:
-        recipe_break = titles[1].span()[0]
-        recipes.append(page[:recipe_break])
-        recipes.append(page[recipe_break:])
-    else:
-        recipes.append(copy(page))
-    return recipes
+class bartender_parser:
+    def __init__(self, pdf, log):
+        self.pdf_pages = read_pdf(pdf, log)
 
-def get_recipe_segments(recipe):
-    title = TITLE_REGEX.match(recipe)
-    description_start = title.span()[1]
-    directions_start = re.match(r'\n\n\d\.', recipe).span()[0]
-    description = recipe[description_start:directions_start]
-    directions = recipe[directions_start:]
-    return title.group(0), description, directions
+    def get_recipes(self, page):
+        recipes = []
+        titles = list(TITLE_REGEX.finditer(page))
+        if len(titles) > 2:
+            for i in range(len(titles) - 1):
+                first_recipe, second_recipe = titles[i:i+2]
+                start = first_recipe.span()[0]
+                end = second_recipe.span()[0]
+                recipes.append(page[start:end])
+            recipes.append(page[end:])
+        elif len(titles) == 2:
+            recipe_break = titles[1].span()[0]
+            recipes.append(page[:recipe_break])
+            recipes.append(page[recipe_break:])
+        else:
+            recipes.append(copy(page))
+        return recipes
+
+    def collect_recipes(self):
+        recipes = []
+        for page in self.pdf_pages:
+            recipe = self.get_recipes(page)
+            recipes += recipe
+        return recipes
+
+    def get_recipe_segments(self, recipe):
+        title = TITLE_REGEX.match(recipe)
+        description_start = title.span()[1]
+        directions_start = re.match(r'\n\n\d\.', recipe).span()[0]
+        description = recipe[description_start:directions_start]
+        directions = recipe[directions_start:]
+        return title.group(0), description, directions
+
+    def create_recipe_df(self, recipes=None):
+        recipe_data = []
+        if not recipes:
+            recipes = self.return_recipes()
+        for recipe in recipes:
+            title, decription, directions = self.get_recipe_segments(recipe)
+            recipe_data.append([title, description, directions])
+        return pd.DataFrame(recipe_data, columns = ['title', 'description', 'directions'])
+
+    def process_recipe_df(self):
+        pass
+        # TO-DO   
+
+class testament_parser:
+    def __init__(self, pdf, log):
+        self.pdf_pages = read_pdf(pdf, log)
+
+    def merge_pages(self):
+        pass
+        # function to merge previous or next page
+        # when directions/title are missing?
+
+    def get_recipes(self, page):
+        recipes = []
+        ingredients_field = list(INGREDIENT_FIELD_REGEX.finditer(recipe))
+
+        if len(ingredients_field) > 1:
+            first_recipe = page[:ingredients_field[1].span()[0]]
+            second_recipe = page[:ingredients_field[0].span()[0]] + page[ingredients_field[1].span()[0]:]
+            recipes.append(first_recipe)
+            recipes.append(second_recipe)
+        elif ingredients_field:
+            recipes.append(copy(page))
+        return recipes
+
+    def get_recipe_segments(self, recipe):
+        pass
+        # title_and_description = recipe[:directions_start[0]]
+        # directions = recipe[directions_start[1]:]
+        
