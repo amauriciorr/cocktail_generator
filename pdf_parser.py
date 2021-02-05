@@ -15,7 +15,7 @@ TITLE_REGEX = re.compile(r'\d\. [A-Z\s]{1,}\n\n')
 GARNISH_REGEX = re.compile(r'(?<=Garnish)[\s\n:\w]{1,}(?=\n)')
 INGREDIENT_FIELD_REGEX = re.compile(r'\n{1,}Ingredients')
 
-def read_pdf(file, log=False):
+def read_pdf(file, log):
     parsed_pages = []
     output_string = StringIO()
     resource_manager = PDFResourceManager()
@@ -30,12 +30,14 @@ def read_pdf(file, log=False):
         parsed_pages.append(output_string.getvalue())
         output_string.truncate(0)
         output_string.seek(0)
-    print('{} | Finished parsing.'.format(dt.now()))
+    print('{} | Finished parsing {} pages.'.format(dt.now(), len(parsed_pages)))
     return parsed_pages
 
 class bartender_parser:
-    def __init__(self, pdf, log):
+    def __init__(self, pdf, log=False):
         self.pdf_pages = read_pdf(pdf, log)
+        self.raw_recipes = None
+        self.recipes = None
 
     def get_recipes(self, page):
         recipes = []
@@ -60,7 +62,7 @@ class bartender_parser:
         for page in self.pdf_pages:
             recipe = self.get_recipes(page)
             recipes += recipe
-        return recipes
+        self.raw_recipes = recipes
 
     def get_recipe_segments(self, recipe):
         title = TITLE_REGEX.match(recipe)
@@ -84,18 +86,14 @@ class bartender_parser:
         # TO-DO   
 
 class testament_parser:
-    def __init__(self, pdf, log):
+    def __init__(self, pdf, log=False):
         self.pdf_pages = read_pdf(pdf, log)
-
-    def merge_pages(self):
-        pass
-        # function to merge previous or next page
-        # when directions/title are missing?
+        self.raw_recipes = None
+        self.recipes = None
 
     def get_recipes(self, page):
         recipes = []
-        ingredients_field = list(INGREDIENT_FIELD_REGEX.finditer(recipe))
-
+        ingredients_field = list(INGREDIENT_FIELD_REGEX.finditer(page))
         if len(ingredients_field) > 1:
             first_recipe = page[:ingredients_field[1].span()[0]]
             second_recipe = page[:ingredients_field[0].span()[0]] + page[ingredients_field[1].span()[0]:]
@@ -105,8 +103,19 @@ class testament_parser:
             recipes.append(copy(page))
         return recipes
 
+    def collect_recipes(self):
+        recipes = []
+        for page in self.pdf_pages:
+            recipe = self.get_recipes(page)
+            recipes += recipe
+        self.raw_recipes = recipes
+
+    def merge_pages(self):
+        pass
+        # function to merge previous or next page
+        # when directions/title are missing?
+
     def get_recipe_segments(self, recipe):
         pass
         # title_and_description = recipe[:directions_start[0]]
         # directions = recipe[directions_start[1]:]
-        
