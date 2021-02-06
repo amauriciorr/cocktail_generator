@@ -104,18 +104,39 @@ class testament_parser:
         return recipes
 
     def collect_recipes(self):
+        # rather than worry about capturing every single
+        # recipe and over-engineering, I've opted to exclude
+        # recipes that have overly long descriptions
+        # i.e. those that spill onto subsequent pages
         recipes = []
+        recipes_to_use = []
         for page in self.pdf_pages:
             recipe = self.get_recipes(page)
             recipes += recipe
-        self.raw_recipes = recipes
+        for recipe in recipes:
+            if INGREDIENT_FIELD_REGEX.search(recipe):
+                recipes_to_use.append(recipes_to_use)
+        self.raw_recipes = recipes_to_use
 
-    def merge_pages(self):
-        pass
-        # function to merge previous or next page
-        # when directions/title are missing?
+    def recipe_cleanup(self, recipe):
+        # regex_to_exclude = ['\nName|\nCategory|\nGlass']
+        exclude = re.compile(r'\nName|\nCategory|\nGlass')
+        replace = re.compile(r'')
+        recipe = exclude.sub('', recipe)
+        return recipe
 
     def get_recipe_segments(self, recipe):
         pass
         # title_and_description = recipe[:directions_start[0]]
         # directions = recipe[directions_start[1]:]
+        '''note to self: separate by taking everything
+        after garnish as directions. then ingredients.
+        take last line of ingredients and move to directions. 
+        '''
+
+class boston_parser:
+    def __init__(self, pdf, log=False):
+        self.pdf_pages = read_pdf(pdf, log)
+        self.raw_recipes = None
+        self.recipes = None
+
