@@ -13,7 +13,10 @@ from pdfminer.pdfparser import PDFParser
 
 TITLE_REGEX = re.compile(r'\d\. [A-Z\s]{1,}\n\n')
 GARNISH_REGEX = re.compile(r'(?<=Garnish)[\s\n:\w]{1,}(?=\n)')
+
 INGREDIENT_FIELD_REGEX = re.compile(r'\n{1,}Ingredients')
+EXCLUDE = re.compile(r'\nName|\nCategory|\nGlass')
+GARNISH_REPLACE = re.compile(r'Garnish\s{1,}\n{1,}:?')
 
 def read_pdf(file, log):
     parsed_pages = []
@@ -103,6 +106,13 @@ class testament_parser:
             recipes.append(copy(page))
         return recipes
 
+    def recipe_cleanup(self, recipe):
+        # leaving as a separate function in case
+        # I'd like to expand the clean-up
+        recipe = EXCLUDE.sub('', recipe)
+        recipe = GARNISH_REPLACE.sub('Garnish: ', recipe)
+        return recipe
+
     def collect_recipes(self):
         # rather than worry about capturing every single
         # recipe and over-engineering, I've opted to exclude
@@ -115,15 +125,9 @@ class testament_parser:
             recipes += recipe
         for recipe in recipes:
             if INGREDIENT_FIELD_REGEX.search(recipe):
-                recipes_to_use.append(recipes_to_use)
+                recipe = self.recipe_cleanup(recipe)
+                recipes_to_use.append(recipe)
         self.raw_recipes = recipes_to_use
-
-    def recipe_cleanup(self, recipe):
-        # regex_to_exclude = ['\nName|\nCategory|\nGlass']
-        exclude = re.compile(r'\nName|\nCategory|\nGlass')
-        replace = re.compile(r'')
-        recipe = exclude.sub('', recipe)
-        return recipe
 
     def get_recipe_segments(self, recipe):
         pass
