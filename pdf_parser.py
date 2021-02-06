@@ -12,6 +12,7 @@ from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfparser import PDFParser
 
 TITLE_REGEX = re.compile(r'\d\. [A-Z\s]{1,}\n\n')
+BARTENDER_TAGLINE = re.compile(r'\n\n1000 BEST BARTENDER’S RECIPES\n\n')
 # GARNISH_REGEX = re.compile(r'(?<=Garnish)[\s\n:\w]{1,}(?=\n)')
 
 INGREDIENT_FIELD_REGEX = re.compile(r'\n{1,}Ingredients')
@@ -68,6 +69,10 @@ class bartender_parser:
             recipe = self.get_recipes(page)
             recipes += recipe
         self.raw_recipes = recipes
+
+    def recipe_cleanup(self, recipe):
+        # TO-DO
+        pass
 
     def get_recipe_segments(self, recipe):
         title = TITLE_REGEX.match(recipe)
