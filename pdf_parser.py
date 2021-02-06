@@ -12,7 +12,7 @@ from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfparser import PDFParser
 
 TITLE_REGEX = re.compile(r'\d\. [A-Z\s]{1,}\n\n')
-GARNISH_REGEX = re.compile(r'(?<=Garnish)[\s\n:\w]{1,}(?=\n)')
+# GARNISH_REGEX = re.compile(r'(?<=Garnish)[\s\n:\w]{1,}(?=\n)')
 
 INGREDIENT_FIELD_REGEX = re.compile(r'\n{1,}Ingredients')
 EXCLUDE = re.compile(r'\nName|\nCategory|\nGlass')
@@ -37,8 +37,10 @@ def read_pdf(file, log):
     return parsed_pages
 
 class bartender_parser:
-    def __init__(self, pdf, log=False):
+    def __init__(self, pdf, start_page, end_page, log=False):
         self.pdf_pages = read_pdf(pdf, log)
+        self.start_page = start_page
+        self.end_page = end_page
         self.raw_recipes = None
         self.recipes = None
 
@@ -62,7 +64,7 @@ class bartender_parser:
 
     def collect_recipes(self):
         recipes = []
-        for page in self.pdf_pages:
+        for page in self.pdf_pages[self.start_page:self.end_page]:
             recipe = self.get_recipes(page)
             recipes += recipe
         self.raw_recipes = recipes
@@ -89,8 +91,10 @@ class bartender_parser:
         # TO-DO   
 
 class testament_parser:
-    def __init__(self, pdf, log=False):
+    def __init__(self, pdf, start_page, end_page, log=False):
         self.pdf_pages = read_pdf(pdf, log)
+        self.start_page = start_page
+        self.end_page = end_page
         self.raw_recipes = None
         self.recipes = None
 
@@ -111,6 +115,7 @@ class testament_parser:
         # I'd like to expand the clean-up
         recipe = EXCLUDE.sub('', recipe)
         recipe = GARNISH_REPLACE.sub('Garnish: ', recipe)
+        recipe = re.sub(r'\n\s', '\n', recipe)
         return recipe
 
     def collect_recipes(self):
@@ -120,7 +125,7 @@ class testament_parser:
         # i.e. those that spill onto subsequent pages
         recipes = []
         recipes_to_use = []
-        for page in self.pdf_pages:
+        for page in self.pdf_pages[self.start_page:self.end_page]:
             recipe = self.get_recipes(page)
             recipes += recipe
         for recipe in recipes:
