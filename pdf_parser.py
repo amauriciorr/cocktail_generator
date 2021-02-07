@@ -18,6 +18,11 @@ BARTENDER_TAGLINE = re.compile(r'\n\n1000 BEST BARTENDER’S RECIPES\n\n')
 INGREDIENT_FIELD_REGEX = re.compile(r'\n{1,}Ingredients')
 EXCLUDE = re.compile(r'\nName|\nCategory|\nGlass')
 GARNISH_REPLACE = re.compile(r'Garnish\s{1,}\n{1,}:?')
+FRACTION_SYMBOLS = {'½': ' 1/2 ', '⅓': ' 1/3 ', '⅔': ' 2/3 ',
+                    '¼': ' 1/4 ', '¾': ' 3/4 ', '⅕': ' 1/5 ',
+                    '⅖': '2/5', '⅗': ' 3/5 ', '⅘': ' 4/5 ', 
+                    '⅙': ' 1/6 ', '⅚': ' 5/6 ', '⅛': ' 1/8 ',
+                    '⅜': ' 3/8 ', '⅝':' 5/8', '⅞': ' 7/8 '}
 
 def read_pdf(file, log):
     parsed_pages = []
@@ -45,7 +50,7 @@ class bartender_parser:
         self.raw_recipes = None
         self.recipes = None
 
-    def get_recipes(self, page):
+    def extract_recipes(self, page):
         recipes = []
         titles = list(TITLE_REGEX.finditer(page))
         if len(titles) > 2:
@@ -66,7 +71,7 @@ class bartender_parser:
     def collect_recipes(self):
         recipes = []
         for page in self.pdf_pages[self.start_page:self.end_page]:
-            recipe = self.get_recipes(page)
+            recipe = self.extract_recipes(page)
             recipes += recipe
         self.raw_recipes = recipes
 
@@ -103,7 +108,7 @@ class testament_parser:
         self.raw_recipes = None
         self.recipes = None
 
-    def get_recipes(self, page):
+    def extract_recipes(self, page):
         recipes = []
         ingredients_field = list(INGREDIENT_FIELD_REGEX.finditer(page))
         if len(ingredients_field) > 1:
@@ -131,7 +136,7 @@ class testament_parser:
         recipes = []
         recipes_to_use = []
         for page in self.pdf_pages[self.start_page:self.end_page]:
-            recipe = self.get_recipes(page)
+            recipe = self.extract_recipes(page)
             recipes += recipe
         for recipe in recipes:
             if INGREDIENT_FIELD_REGEX.search(recipe):
@@ -149,8 +154,24 @@ class testament_parser:
         '''
 
 class boston_parser:
-    def __init__(self, pdf, log=False):
+    def __init__(self, pdf, start_page, end_page, log=False):
         self.pdf_pages = read_pdf(pdf, log)
+        self.start_page = start_page
+        self.end_page = end_page
         self.raw_recipes = None
         self.recipes = None
+
+    def replace_fractions(self, page):
+        for key, value in FRACTION_SYMBOLS.items():
+            page = re.sub(r'{}'.format(key), value, page)
+        return page
+
+    def collect_recipes(self):
+        recipes = []
+        for page in self.pdf_pages[self.start_page:self.end_page]:
+            page = self.replace_fractions(page)
+            recipes.append(page)
+        self.raw_recipes = recipes
+
+
 
