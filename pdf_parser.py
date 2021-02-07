@@ -18,6 +18,7 @@ BARTENDER_TAGLINE = re.compile(r'\n\n1000 BEST BARTENDER’S RECIPES\n\n')
 INGREDIENT_FIELD_REGEX = re.compile(r'\n{1,}Ingredients')
 EXCLUDE = re.compile(r'\nName|\nCategory|\nGlass')
 GARNISH_REPLACE = re.compile(r'Garnish\s{1,}\n{1,}:?')
+BOS_TITLE_REGEX = re.compile(r'\s[A-Z\s\Wd]{2,}\n')
 FRACTION_SYMBOLS = {'½': ' 1/2 ', '⅓': ' 1/3 ', '⅔': ' 2/3 ',
                     '¼': ' 1/4 ', '¾': ' 3/4 ', '⅕': ' 1/5 ',
                     '⅖': '2/5', '⅗': ' 3/5 ', '⅘': ' 4/5 ', 
