@@ -19,11 +19,13 @@ INGREDIENT_FIELD_REGEX = re.compile(r'\n{1,}Ingredients')
 EXCLUDE = re.compile(r'\nName|\nCategory|\nGlass')
 GARNISH_REPLACE = re.compile(r'Garnish\s{1,}\n{1,}:?')
 BOS_TITLE_REGEX = re.compile(r'\s[A-Z\s\Wd]{2,}\n')
+BOS_TAGLINE = re.compile(r'\d{1,}\n\n?MR. BOSTON: OFFICIAL BARTENDER’S GUIDE\n\n?\s?')
 FRACTION_SYMBOLS = {'½': ' 1/2 ', '⅓': ' 1/3 ', '⅔': ' 2/3 ',
                     '¼': ' 1/4 ', '¾': ' 3/4 ', '⅕': ' 1/5 ',
                     '⅖': '2/5', '⅗': ' 3/5 ', '⅘': ' 4/5 ', 
                     '⅙': ' 1/6 ', '⅚': ' 5/6 ', '⅛': ' 1/8 ',
-                    '⅜': ' 3/8 ', '⅝':' 5/8', '⅞': ' 7/8 '}
+                    '⅜': ' 3/8 ', '⅝':' 5/8', '⅞': ' 7/8 '
+                    '¹⁄': ' 1/'}
 
 def read_pdf(file, log):
     parsed_pages = []
@@ -167,12 +169,40 @@ class boston_parser:
             page = re.sub(r'{}'.format(key), value, page)
         return page
 
+    def extract_recipes(self, page):
+        recipes = []
+        titles = list(BOS_TITLE_REGEX.finditer(page))
+        if len(titles) > 2:
+            for i in range(len(titles) - 1):
+                first_recipe, second_recipe = titles[i:i+2]
+                start = first_recipe.span()[0]
+                end = second_recipe.span()[0]
+                recipes.append(page[start:end])
+            recipes.append(page[end:])
+        elif titles == 2:
+            recipe_break = titles[1].span()[0]
+            recipes.append(page[:recipe_break])
+            recipes.append(page[recipe_break:])
+        else:
+            recipes.append(copy(page))
+        return recipes
+    def recipe_cleanup(self, page):
+        page = self.replace_fractions(page)
+        page = BOS_TAGLINE.sub('', page)
+        page = re.sub(r'\n\n', '\n', page)
+        page = re.sub(r'\n[A-Z]{1}\b', '', page)
+        page = re.sub(r'\n\x0c', '', page)
+        page = re.sub(r'-\n', '', page)
+        re.sub(r'^\n\s?', '', page)
+        return page
+
     def collect_recipes(self):
         recipes = []
+        recipes_to_use = []
         for page in self.pdf_pages[self.start_page:self.end_page]:
-            page = self.replace_fractions(page)
+            page = self.recipe_cleanup(page)
             recipes.append(page)
-        self.raw_recipes = recipes
-
-
+        for recipe in recipes:
+            recipes_to_use += self.extract_recipes(recipe)
+        self.raw_recipes = recipes_to_use
 
