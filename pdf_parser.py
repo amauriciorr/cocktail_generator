@@ -24,7 +24,7 @@ FRACTION_SYMBOLS = {'½': ' 1/2 ', '⅓': ' 1/3 ', '⅔': ' 2/3 ',
                     '¼': ' 1/4 ', '¾': ' 3/4 ', '⅕': ' 1/5 ',
                     '⅖': '2/5', '⅗': ' 3/5 ', '⅘': ' 4/5 ', 
                     '⅙': ' 1/6 ', '⅚': ' 5/6 ', '⅛': ' 1/8 ',
-                    '⅜': ' 3/8 ', '⅝':' 5/8', '⅞': ' 7/8 '
+                    '⅜': ' 3/8 ', '⅝':' 5/8', '⅞': ' 7/8 ',
                     '¹⁄': ' 1/'}
 
 def read_pdf(file, log):
@@ -186,6 +186,16 @@ class boston_parser:
         else:
             recipes.append(copy(page))
         return recipes
+
+    def title_fix(self, page):
+        split_page = page.split('\n')
+        if BOS_TITLE_REGEX.search(split_page[0]) and BOS_TITLE_REGEX.search(split_page[1]):
+            fixed_page = [split_page[0] + ' ' + split_page[1]] + split_page[2:]
+            fixed_page = '\n'.join(fixed_page)
+        else:
+            fixed_page = '\n'.join(split_page)
+        return fixed_page
+
     def recipe_cleanup(self, page):
         page = self.replace_fractions(page)
         page = BOS_TAGLINE.sub('', page)
@@ -193,7 +203,8 @@ class boston_parser:
         page = re.sub(r'\n[A-Z]{1}\b', '', page)
         page = re.sub(r'\n\x0c', '', page)
         page = re.sub(r'-\n', '', page)
-        re.sub(r'^\n\s?', '', page)
+        page = re.sub(r'^\n\s?', '', page)
+        page = self.title_fix(page)
         return page
 
     def collect_recipes(self):
