@@ -27,6 +27,13 @@ FRACTION_SYMBOLS = {'½': ' 1/2 ', '⅓': ' 1/3 ', '⅔': ' 2/3 ',
                     '⅜': ' 3/8 ', '⅝':' 5/8', '⅞': ' 7/8 ',
                     '¹⁄': ' 1/'}
 
+# for each of the source PDFs split raw_recipes 
+# into the following sections:
+# title
+# description
+# ingredients
+# directions
+
 def read_pdf(file, log):
     parsed_pages = []
     output_string = StringIO()
@@ -54,6 +61,8 @@ class bartender_parser:
         self.recipes = None
 
     def extract_recipes(self, page):
+        # function for splitting multiple recipes
+        # in a single page
         recipes = []
         titles = list(TITLE_REGEX.finditer(page))
         if len(titles) > 2:
@@ -72,6 +81,8 @@ class bartender_parser:
         return recipes
 
     def collect_recipes(self):
+        # function for iterating through relevant part
+        # of pdf, excluding say table of contents and appendix
         recipes = []
         for page in self.pdf_pages[self.start_page:self.end_page]:
             recipe = self.extract_recipes(page)
@@ -83,6 +94,8 @@ class bartender_parser:
         pass
 
     def get_recipe_segments(self, recipe):
+        # function for identifying parts of recipe,
+        # separating then extracting them accordingly
         title = TITLE_REGEX.match(recipe)
         description_start = title.span()[1]
         directions_start = re.match(r'\n\n\d\.', recipe).span()[0]
@@ -91,6 +104,10 @@ class bartender_parser:
         return title.group(0), description, directions
 
     def create_recipe_df(self, recipes=None):
+        # maybe reconsider need for this or utility
+        # of this function. meant to organize pieces of recipe as
+        # separate pieces.. but for later combining. 
+        # could prove useful to have them separate though..
         recipe_data = []
         if not recipes:
             recipes = self.return_recipes()
@@ -204,6 +221,9 @@ class boston_parser:
         return recipes
 
     def recipe_cleanup(self, page):
+        # high-level clean-up
+        # pre-segmenting recipes per page
+        # and recipe components
         page = self.replace_fractions(page)
         page = BOS_TAGLINE.sub('', page)
         page = re.sub(r'\n\n', '\n', page)
