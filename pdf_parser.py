@@ -90,8 +90,10 @@ class bartender_parser:
         self.raw_recipes = recipes
 
     def recipe_cleanup(self, recipe):
-        # TO-DO
-        pass
+        recipe = BARTENDER_TAGLINE.sub('', recipe)
+        recipe = re.sub(r'\n\d\n', '', page)
+        recipe = re.sub(r'\x0c', '', page)
+
 
     def get_recipe_segments(self, recipe):
         # function for identifying parts of recipe,
@@ -204,6 +206,7 @@ class boston_parser:
 
     def extract_recipes(self, page):
         recipes = []
+        recipes_to_use = []
         titles = list(BOS_TITLE_REGEX.finditer(page))
         if len(titles) > 2:
             for i in range(len(titles) - 1):
@@ -218,7 +221,10 @@ class boston_parser:
             recipes.append(self.title_fix(page[recipe_break:]))
         else:
             recipes.append(self.title_fix(page))
-        return recipes
+        for recipe in recipes:
+            if re.search(r'\d{1,}\s{1,}oz\.', recipe):
+                recipes_to_use.append(recipe)
+        return recipes_to_use
 
     def recipe_cleanup(self, page):
         # high-level clean-up
