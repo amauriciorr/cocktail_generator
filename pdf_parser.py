@@ -84,16 +84,27 @@ class bartender_parser:
         # function for iterating through relevant part
         # of pdf, excluding say table of contents and appendix
         recipes = []
+        recipes_to_use = []
         for page in self.pdf_pages[self.start_page:self.end_page]:
             recipe = self.extract_recipes(page)
             recipes += recipe
-        self.raw_recipes = recipes
+        for recipe in recipes:
+            recipe = self.recipe_cleanup(recipe)
+            recipes_to_use.append(recipe)
+        self.raw_recipes = recipes_to_use
 
     def recipe_cleanup(self, recipe):
         recipe = BARTENDER_TAGLINE.sub('', recipe)
-        recipe = re.sub(r'\n\d\n', '', page)
-        recipe = re.sub(r'\x0c', '', page)
-
+        recipe = re.sub(r'\n\d\n', '', recipe)
+        recipe = re.sub(r'\x0c', '', recipe)
+        recipe = re.sub(r'\n\d$','', recipe)
+        recipe = re.sub(r'-\n\n', '-', recipe)
+        try:
+            recipe_start = re.search(r'\d{1,}\.', recipe).span()[0]
+            recipe = recipe[recipe_start:]
+        except:
+            pass
+        return recipe
 
     def get_recipe_segments(self, recipe):
         # function for identifying parts of recipe,
