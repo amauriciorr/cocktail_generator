@@ -133,59 +133,6 @@ class bartender_parser:
         pass
         # TO-DO   
 
-class testament_parser:
-    def __init__(self, pdf, start_page, end_page, log=False):
-        self.pdf_pages = read_pdf(pdf, log)
-        self.start_page = start_page
-        self.end_page = end_page
-        self.raw_recipes = None
-        self.recipes = None
-
-    def extract_recipes(self, page):
-        recipes = []
-        ingredients_field = list(INGREDIENT_FIELD_REGEX.finditer(page))
-        if len(ingredients_field) > 1:
-            first_recipe = page[:ingredients_field[1].span()[0]]
-            second_recipe = page[:ingredients_field[0].span()[0]] + page[ingredients_field[1].span()[0]:]
-            recipes.append(first_recipe)
-            recipes.append(second_recipe)
-        elif ingredients_field:
-            recipes.append(page)
-        return recipes
-
-    def recipe_cleanup(self, recipe):
-        # leaving as a separate function in case
-        # I'd like to expand the clean-up
-        recipe = re.sub(r'\nName|\nCategory|\nGlass', '', recipe)
-        recipe = re.sub(r'Garnish\s{1,}\n{1,}:?', 'Garnish: ', recipe)
-        recipe = re.sub(r'\n\s', '\n', recipe)
-        return recipe
-
-    def collect_recipes(self):
-        # rather than worry about capturing every single
-        # recipe and over-engineering, I've opted to exclude
-        # recipes that have overly long descriptions
-        # i.e. those that spill onto subsequent pages
-        recipes = []
-        recipes_to_use = []
-        for page in self.pdf_pages[self.start_page:self.end_page]:
-            recipe = self.extract_recipes(page)
-            recipes += recipe
-        for recipe in recipes:
-            if INGREDIENT_FIELD_REGEX.search(recipe):
-                recipe = self.recipe_cleanup(recipe)
-                recipes_to_use.append(recipe)
-        self.raw_recipes = recipes_to_use
-
-    def get_recipe_segments(self, recipe):
-        pass
-        # title_and_description = recipe[:directions_start[0]]
-        # directions = recipe[directions_start[1]:]
-        '''note to self: separate by taking everything
-        after garnish as directions. then ingredients.
-        take last line of ingredients and move to directions. 
-        '''
-
 class boston_parser:
     def __init__(self, pdf, start_page, end_page, log=False):
         self.pdf_pages = read_pdf(pdf, log)
@@ -259,3 +206,61 @@ class boston_parser:
         for recipe in recipes:
             recipes_to_use += self.extract_recipes(recipe)
         self.raw_recipes = recipes_to_use
+
+# I've decided to exclude testament parser/ testament pdf as source material
+# primarily because it's generally longer and more verbose than the other two pdfs. 
+# it's also messier than the other pdfs, so extracting cocktail recipes and ingredients
+# exclusively would require more work than it's worth
+
+class testament_parser:
+    def __init__(self, pdf, start_page, end_page, log=False):
+        self.pdf_pages = read_pdf(pdf, log)
+        self.start_page = start_page
+        self.end_page = end_page
+        self.raw_recipes = None
+        self.recipes = None
+
+    def extract_recipes(self, page):
+        recipes = []
+        ingredients_field = list(INGREDIENT_FIELD_REGEX.finditer(page))
+        if len(ingredients_field) > 1:
+            first_recipe = page[:ingredients_field[1].span()[0]]
+            second_recipe = page[:ingredients_field[0].span()[0]] + page[ingredients_field[1].span()[0]:]
+            recipes.append(first_recipe)
+            recipes.append(second_recipe)
+        elif ingredients_field:
+            recipes.append(page)
+        return recipes
+
+    def recipe_cleanup(self, recipe):
+        # leaving as a separate function in case
+        # I'd like to expand the clean-up
+        recipe = re.sub(r'\nName|\nCategory|\nGlass', '', recipe)
+        recipe = re.sub(r'Garnish\s{1,}\n{1,}:?', 'Garnish: ', recipe)
+        recipe = re.sub(r'\n\s', '\n', recipe)
+        return recipe
+
+    def collect_recipes(self):
+        # rather than worry about capturing every single
+        # recipe and over-engineering, I've opted to exclude
+        # recipes that have overly long descriptions
+        # i.e. those that spill onto subsequent pages
+        recipes = []
+        recipes_to_use = []
+        for page in self.pdf_pages[self.start_page:self.end_page]:
+            recipe = self.extract_recipes(page)
+            recipes += recipe
+        for recipe in recipes:
+            if INGREDIENT_FIELD_REGEX.search(recipe):
+                recipe = self.recipe_cleanup(recipe)
+                recipes_to_use.append(recipe)
+        self.raw_recipes = recipes_to_use
+
+    def get_recipe_segments(self, recipe):
+        pass
+        # title_and_description = recipe[:directions_start[0]]
+        # directions = recipe[directions_start[1]:]
+        '''note to self: separate by taking everything
+        after garnish as directions. then ingredients.
+        take last line of ingredients and move to directions. 
+        '''
