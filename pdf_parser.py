@@ -11,7 +11,7 @@ from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
 from pdfminer.pdfparser import PDFParser
 
-TITLE_REGEX = re.compile(r'\d\. [A-Z\s]{1,}\n\n')
+TITLE_REGEX = re.compile(r'\d\. [A-Z\s,]{1,}\n\n')
 BARTENDER_TAGLINE = re.compile(r'\n\n1000 BEST BARTENDER’S RECIPES\n\n')
 # GARNISH_REGEX = re.compile(r'(?<=Garnish)[\s\n:\w]{1,}(?=\n)')
 
@@ -80,19 +80,6 @@ class bartender_parser:
             recipes.append(page)
         return recipes
 
-    def collect_recipes(self):
-        # function for iterating through relevant part
-        # of pdf, excluding say table of contents and appendix
-        recipes = []
-        recipes_to_use = []
-        for page in self.pdf_pages[self.start_page:self.end_page]:
-            recipe = self.extract_recipes(page)
-            recipes += recipe
-        for recipe in recipes:
-            recipe = self.recipe_cleanup(recipe)
-            recipes_to_use.append(recipe)
-        self.raw_recipes = recipes_to_use
-
     def recipe_cleanup(self, recipe):
         recipe = BARTENDER_TAGLINE.sub('', recipe)
         recipe = re.sub(r'\n\d\n', '', recipe)
@@ -106,12 +93,25 @@ class bartender_parser:
             pass
         return recipe
 
+    def collect_recipes(self):
+        # function for iterating through relevant part
+        # of pdf, excluding say table of contents and appendix
+        recipes = []
+        recipes_to_use = []
+        for page in self.pdf_pages[self.start_page:self.end_page]:
+            recipe = self.extract_recipes(page)
+            recipes += recipe
+        for recipe in recipes:
+            recipe = self.recipe_cleanup(recipe)
+            recipes_to_use.append(recipe)
+        self.raw_recipes = recipes_to_use
+
     def get_recipe_segments(self, recipe):
         # function for identifying parts of recipe,
         # separating then extracting them accordingly
-        title = TITLE_REGEX.match(recipe)
+        title = TITLE_REGEX.search(recipe)
         description_start = title.span()[1]
-        directions_start = re.match(r'\n\n\d\.', recipe).span()[0]
+        directions_start = re.search(r'\n\n\d\.', recipe).span()[0]
         description = recipe[description_start:directions_start]
         directions = recipe[directions_start:]
         return title.group(0), description, directions
@@ -125,9 +125,18 @@ class bartender_parser:
         if not recipes:
             recipes = self.return_recipes()
         for recipe in recipes:
-            title, decription, directions = self.get_recipe_segments(recipe)
-            recipe_data.append([title, description, directions])
-        return pd.DataFrame(recipe_data, columns = ['title', 'description', 'directions'])
+            try:
+                title, description, directions = self.get_recipe_segments(recipe)
+                recipe_data.append([title, description, directions])
+            except:
+                continue
+        recipe_df = pd.DataFrame(recipe_data, columns = ['title', 'description', 'directions'])
+        recipe_df.title = recipe_df.title.map(lambda row: re.sub(r'\d+\.','', row).strip('\n\n'))
+        recipe_df.title = 'TITLE: ' + recipe_df.title
+        recipe_df.description = 'DESCRIPTION: ' + recipe_df.description
+        recipe_df.directions = recipe_df.directions.map(lambda row: re.sub(r'\d+$', '', row).strip('\n\n'))
+        recipe_df.directions = 'DIRECTIONS: ' + recipe_df.directions
+        return recipe_df
 
     def process_recipe_df(self):
         pass
@@ -264,3 +273,6 @@ class testament_parser:
         after garnish as directions. then ingredients.
         take last line of ingredients and move to directions. 
         '''
+
+if __name__ == '__main__':
+    pass
