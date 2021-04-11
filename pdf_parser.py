@@ -27,12 +27,6 @@ FRACTION_SYMBOLS = {'½': ' 1/2 ', '⅓': ' 1/3 ', '⅔': ' 2/3 ',
                     '⅜': ' 3/8 ', '⅝':' 5/8', '⅞': ' 7/8 ',
                     '¹⁄': ' 1/'}
 
-# for each of the source PDFs split raw_recipes 
-# into the following sections:
-# title
-# description
-# ingredients
-# directions
 
 def read_pdf(file, log):
     parsed_pages = []
