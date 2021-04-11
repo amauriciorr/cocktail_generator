@@ -116,15 +116,9 @@ class bartender_parser:
         directions = recipe[directions_start:]
         return title.group(0), description, directions
 
-    def create_recipe_df(self, recipes=None):
-        # maybe reconsider need for this or utility
-        # of this function. meant to organize pieces of recipe as
-        # separate pieces.. but for later combining. 
-        # could prove useful to have them separate though..
+    def create_recipe_df(self):
         recipe_data = []
-        if not recipes:
-            recipes = self.return_recipes()
-        for recipe in recipes:
+        for recipe in self.raw_recipes:
             try:
                 title, description, directions = self.get_recipe_segments(recipe)
                 recipe_data.append([title, description, directions])
@@ -135,9 +129,9 @@ class bartender_parser:
         recipe_df.title = 'TITLE: ' + recipe_df.title
         recipe_df.description = 'DESCRIPTION: ' + recipe_df.description
         recipe_df.directions = recipe_df.directions.map(lambda row: re.sub(r'\d+$', '', row).strip('\n\n'))
+        recipe_df.directions = recipe_df.directions.map(lambda row: re.sub(r'\d+\.', '', row))
         recipe_df.directions = 'DIRECTIONS: ' + recipe_df.directions
         return recipe_df
-
     def process_recipe_df(self):
         pass
         # TO-DO   
@@ -216,12 +210,37 @@ class boston_parser:
             recipes_to_use += self.extract_recipes(recipe)
         self.raw_recipes = recipes_to_use
 
-# I've decided to exclude testament parser/ testament pdf as source material
-# primarily because it's generally longer and more verbose than the other two pdfs. 
-# it's also messier than the other pdfs, so extracting cocktail recipes and ingredients
-# exclusively would require more work than it's worth
+    def get_recipe_segments(self, recipe):
+        recipe_lines = recipe.split('\n')
+        indices = [idx for idx, sentence in enumerate(recipe.split('\n')) if re.search(r'^\d+', sentence.strip())]
+        title = ' '.join(recipe_lines[:indices[0]]).strip()
+        description = ' \n'.join(recipe_lines[indices[0]:indices[-1]]).strip()
+        directions = ' \n'.join(recipe_lines[indices[-1]+1:]).strip()
+        return title, description, directions
+
+    def create_recipe_df(self):
+        recipe_data = []
+        for recipe in self.raw_recipes:
+            try:
+                title, description, directions = self.get_recipe_segments(recipe)
+                recipe_data.append([title, description, directions])
+            except:
+                continue
+        recipe_df = pd.DataFrame(recipe_data, columns = ['title', 'description', 'directions'])
+        recipe_df = recipe_df[recipe_df.title.map(lambda x: x.isupper())]
+        recipe_df = recipe_df[~(recipe_df.directions=='') & ~(recipe_df.description == '')]
+        recipe_df.title = 'TITLE: ' + recipe_df.title
+        recipe_df.description = 'DESCRIPTION: ' + recipe_df.description
+        recipe_df.directions = 'DIRECTIONS: ' + recipe_df.directions
+        return recipe_df
 
 class testament_parser:
+    '''
+    I've decided to exclude testament parser/ testament pdf as source material
+    primarily because it's generally longer and more verbose than the other two pdfs. 
+    it's also messier than the other pdfs, so extracting cocktail recipes and ingredients
+    exclusively would require more work than it's worth
+    '''
     def __init__(self, pdf, start_page, end_page, log=False):
         self.pdf_pages = read_pdf(pdf, log)
         self.start_page = start_page
