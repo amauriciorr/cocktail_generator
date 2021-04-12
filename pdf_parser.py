@@ -125,10 +125,7 @@ class bartender_parser:
         recipe_df.directions = recipe_df.directions.map(lambda row: re.sub(r'\d+$', '', row).strip('\n\n'))
         recipe_df.directions = recipe_df.directions.map(lambda row: re.sub(r'\d+\.', '', row))
         recipe_df.directions = 'DIRECTIONS: ' + recipe_df.directions
-        return recipe_df
-    def process_recipe_df(self):
-        pass
-        # TO-DO   
+        return recipe_df 
 
 class boston_parser:
     def __init__(self, pdf, start_page, end_page, log=False):
@@ -288,4 +285,18 @@ class testament_parser:
         '''
 
 if __name__ == '__main__':
-    pass
+    bartender = open('source/1000bartender.pdf', 'rb')
+    boston = open('source/mr_boston.pdf', 'rb')
+    # pages are hard coded / determined from investigating 
+    # content on parsed pages
+    bos = boston_parser(boston, 34, 285, True)
+    bar = bartender_parser(bartender, 28, 560, True)
+    bos.collect_recipes()
+    bar.collect_recipes()
+    bar_df = bar.create_recipe_df()
+    bos_df = bos.create_recipe_df()
+    sf_df = pd.read_csv('source/sf_cocktails.csv')
+    recipe_df = pd.concat([bar_df, bos_df, sf_df])
+    recipe_df.description = recipe_df.description.map(lambda x: re.sub(r'oz\.?', 'ounce', x))
+    recipe_df.directions = recipe_df.directions.map(lambda x: re.sub(r'oz\.?', 'ounce', x))
+    recipe_df.to_csv('cocktails.csv', index = False)
