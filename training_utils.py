@@ -5,6 +5,7 @@ import numpy as np
 from copy import copy
 from datetime import datetime as dt
 import torch
+import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader, TensorDataset, RandomSampler
 from transformers import GPT2LMHeadModel, GPT2Tokenizer, AdamW
 
@@ -180,6 +181,7 @@ if __name__ == '__main__':
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = GPT2LMHeadModel.from_pretrained('gpt2-medium')
     tokenizer = GPT2Tokenizer.from_pretrained('gpt2-medium')
+    tokenizer.pad_token = tokenizer.eos_token
 
     cocktail_recipes_df = pd.read_csv('cocktails.csv')
     train_set, validation_set = get_splits(cocktail_recipes_df)
