@@ -177,7 +177,6 @@ if __name__ == '__main__':
                         help='Path to load fine-tuned model checkpoint.')
     args = parser.parse_args()
     
-    # need to split data between train + val
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = GPT2LMHeadModel.from_pretrained('gpt2-medium')
     tokenizer = GPT2Tokenizer.from_pretrained('gpt2-medium')
