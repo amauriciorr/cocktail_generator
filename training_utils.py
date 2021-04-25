@@ -82,7 +82,6 @@ class trainer(object):
     def __init__(self, device, model, train_data, validation_data):
         self.device = device
         self.model = model
-        self.model = criterion
         self.train_data = train_data
         self.validation_data = validation_data
 
