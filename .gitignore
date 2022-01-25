@@ -3,3 +3,4 @@ __pycache__/
 source/
 # ignore pickled files from scratch work
 *.p
+scratch_work.ipynb
