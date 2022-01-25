@@ -4,3 +4,4 @@ source/
 # ignore pickled files from scratch work
 *.p
 scratch_work.ipynb
+cocktail_bot.pt
