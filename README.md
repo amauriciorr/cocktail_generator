@@ -24,7 +24,8 @@ twist of lemon peel.
 
 ### Bullwizard
 ![bullwizard](/assets/bullwizard.gif) 
-```TITLE: BULLWIZARD
+```
+TITLE: BULLWIZARD
 DESCRIPTION: 1 1/2  ounce Whiskey (Straight Rye) 
 1 ounce Lemon Juice 
  1/4  ounce Orange Juice 
@@ -49,7 +50,8 @@ Garnish with a lemon twist.
 
 ### Gin & Lemonade
 ![gin_and_lemonade](/assets/gin_and_lemonade.gif) 
-```TITLE: GIN AND LEMONADE
+```
+TITLE: GIN AND LEMONADE
 DESCRIPTION: 2 ounce Gin 
 1 tbsp. Lemon Juice
 DIRECTIONS: Club Soda 
@@ -61,7 +63,8 @@ and stir.
 
 ### Martini Sour
 ![martini_sour](/assets/martini_sour.gif) 
-```TITLE:  MARTINI SOUR
+```
+TITLE:  MARTINI SOUR
 DESCRIPTION: Named for a famous Peruvian drink, this is a favorite among the
 Vietnamese.
 
