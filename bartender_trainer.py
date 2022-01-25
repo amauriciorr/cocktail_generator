@@ -174,7 +174,7 @@ if __name__ == '__main__':
     parser.add_argument('--model_path', 
                         type=str,
                         default='./',
-                        help='Path to load fine-tuned model checkpoint.')
+                        help='Path to save trained model checkpoint.')
     args = parser.parse_args()
     
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
