@@ -11,18 +11,6 @@ Built using cocktail recipe PDFs I found on the web:
 
 ## Example generated cocktails
 
-### Bourbon Collins
-![bourbon_collins](/assets/bourbon_collins.gif) 
-```
-TITLE: BOURBON COLLINS
-DESCRIPTION: 1 1/2  ounce Gin 
-1 ounce Triple Sec
-DIRECTIONS: Shake with ice and strain  
-into chilled cocktail glass.  
-Garnish with a  
-twist of lemon peel.
-```
-
 ### Bullwizard
 ![bullwizard](/assets/bullwizard.gif) 
 ```
@@ -37,8 +25,19 @@ DIRECTIONS: Shake with ice and strain
 into chilled cocktail glass. Garnish with a  
 liqueur and a lemon twist.
 ```
+
+### Bourbon Collins
+```
+TITLE: BOURBON COLLINS
+DESCRIPTION: 1 1/2  ounce Gin 
+1 ounce Triple Sec
+DIRECTIONS: Shake with ice and strain  
+into chilled cocktail glass.  
+Garnish with a  
+twist of lemon peel.
+```
+
 ### Forever Dream
-![forever_dream](/assets/forever_dream.gif) 
 ```
 TITLE: FOREVER DREAM
 DESCRIPTION: 1 1/2  ounce Whiskey (Bourbon) 
@@ -50,7 +49,6 @@ Garnish with a lemon twist.
 ```
 
 ### Gin & Lemonade
-![gin_and_lemonade](/assets/gin_and_lemonade.gif) 
 ```
 TITLE: GIN AND LEMONADE
 DESCRIPTION: 2 ounce Gin 
@@ -63,7 +61,6 @@ and stir.
 ```
 
 ### Martini Sour
-![martini_sour](/assets/martini_sour.gif) 
 ```
 TITLE:  MARTINI SOUR
 DESCRIPTION: Named for a famous Peruvian drink, this is a favorite among the
