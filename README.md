@@ -10,6 +10,7 @@ Built using cocktail recipe PDFs I found on the web:
 * `cocktail_bot.py` - generates random cocktail at runtime
 
 ## Example generated cocktails
+Below are cocktail recipes generated using GPT2 trained on cocktail recipes; each recipe was formatted to include clear `TITLE`, `DESCRIPTION`, and `DIRECTIONS` sections. A list of randomly generated recipes can be found in the `recipes/` directory. Additional gifs displaying recipe generation can be found in `assets/`.
 
 ### Bullwizard
 ![bullwizard](/assets/bullwizard.gif) 
