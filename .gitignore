@@ -5,3 +5,4 @@ source/
 *.p
 scratch_work.ipynb
 cocktail_bot.pt
+pickled_files/
